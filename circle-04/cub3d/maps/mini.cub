@@ -1,0 +1,22 @@
+R 500 500
+
+
+NO ./textures/mossy.xpm
+
+SO ./textures/wood.xpm
+
+WE ./textures/purplestone.xpm
+
+EA ./textures/redbrick.xpm
+
+S ./textures/barrel.xpm
+
+C 153, 00, 153
+
+F 153, 255, 153
+
+11111
+100S1
+12001
+10001
+11111
