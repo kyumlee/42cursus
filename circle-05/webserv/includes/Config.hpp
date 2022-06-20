@@ -1,7 +1,7 @@
 #ifndef __CONFIG_HPP__
 # define __CONFIG_HPP__
 
-#include "./Server.hpp"
+# include "./Server.hpp"
 
 class	Config {
 	private:
@@ -17,6 +17,10 @@ class	Config {
 		Server	getServerByName (std::string name);
 
 		void	addServer (Server serv);
+		Server	selectServer ();
+
+		void	parseServerBlock (std::string buf);
+		void	parse (std::string file);
 };
 
 #endif

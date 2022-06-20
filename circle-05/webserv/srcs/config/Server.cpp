@@ -2,8 +2,9 @@
 
 // constructor, destructor, assignment operator overload
 Server::Server ()
-	: _address("0.0.0.0:80"),
-	_servName("default_server"),
+	: _host("0.0.0.0"),
+	_port("80"),
+	_name("default_server"),
 	_clntSize(1024),
 	_root("./../../tmp/www"),
 	_locations(),
@@ -14,8 +15,9 @@ Server::Server ()
 {}
 
 Server::Server (const Server &srv)
-	: _address(srv._address),
-	_servName(srv._servName),
+	: _host(srv._host),
+	_port(srv._port),
+	_name(srv._name),
 	_errPages(srv._errPages),
 	_clntSize(srv._clntSize),
 	_root(srv._root),
@@ -29,8 +31,9 @@ Server::Server (const Server &srv)
 Server::~Server () {}
 
 Server				&Server::operator= (const Server &srv) {
-	_address = srv._address;
-	_servName = srv._servName;
+	_host = srv._host;
+	_port = srv._port;
+	_name = srv._name;
 	_errPages = srv._errPages;
 	_clntSize = srv._clntSize;
 	_root = srv._root;
@@ -44,9 +47,11 @@ Server				&Server::operator= (const Server &srv) {
 }
 
 // Server::getters
-std::string					Server::getAddress () { return (_address); }
+std::string					Server::getHost () { return (_host); }
 
-std::string					Server::getServName () { return (_servName); }
+std::string					Server::getPort () { return (_port); }
+
+std::string					Server::getName () { return (_name); }
 
 std::map<int, std::string>	Server::getErrPages () { return (_errPages); }
 
@@ -65,9 +70,11 @@ bool						Server::getDListing () { return (_dListing); }
 std::string					Server::getDefault () { return (_default); }
 
 // Server::setters
-void						Server::setAddress (std::string address) { _address = address; }
+void						Server::setHost (std::string host) { _host = host; }
 
-void						Server::setServName (std::string name) { _servName = name; }
+void						Server::setPort (std::string port) { _port = port; }
+
+void						Server::setName (std::string name) { _name = name; }
 
 void						Server::addErrPage (int errNo, std::string page) { _errPages[errNo] = page; }
 
@@ -85,3 +92,6 @@ void						Server::setRedirect (int redirect) { _redirect = redirect; }
 void						Server::setDListing (bool dListing) { _dListing = dListing; }
 
 void						Server::setDefault (std::string file) { _default = file; }
+
+// TODO
+Location					Server::selectLocation () { return (_locations[0]); }

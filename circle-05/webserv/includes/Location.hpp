@@ -1,9 +1,7 @@
 #ifndef __LOCATION_HPP__
 # define __LOCATION_HPP__
 
-# include <iostream>
-# include <vector>
-# include <map>
+# include "./Utils.hpp"
 
 /*
  * location optional_modifier location_match {

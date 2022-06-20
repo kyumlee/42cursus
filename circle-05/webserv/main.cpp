@@ -1,13 +1,14 @@
-#include "./includes/webserv.hpp"
+#include "./includes/Config.hpp"
 
 int	main(int argc, char **argv) {
 	if (argc > 2) {
-		std::cout << "Wrong number of arguments" << std::endl;
+		printErr("Wrong number of arguments");
 		return (1);
 	}
 
-	Config	conf;
-	std::string	confFile = (argc == 1) ? "./conf/default.conf" : argv[1];
+	std::string	confFile = (argc == 1) ? DEFAULT_CONF : argv[1];
 
-	std::cout << "configuration file: " << confFile << std::endl;
+	Config	conf;
+
+	conf.parse(confFile);
 }
