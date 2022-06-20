@@ -5,22 +5,23 @@
 
 class	Config {
 	private:
-		std::vector<Server>	_server;
+		std::vector<Server>				_server;
 
 	public:
 		Config ();
 		Config (Config &conf);
 		~Config ();
-		Config	&operator= (Config &conf);
+		Config						&operator= (Config &conf);
 
-		Server	getServerByAddr (std::string address);
-		Server	getServerByName (std::string name);
+		Server						getServerByAddr (std::string address);
+		Server						getServerByName (std::string name);
 
-		void	addServer (Server serv);
-		Server	selectServer ();
+		void						addServer (Server serv);
+		Server						selectServer ();
 
-		void	parseServerBlock (std::string buf);
-		void	parse (std::string file);
+		void						parseBlock (std::string block);
+
+		void						parse (std::string file);
 };
 
 #endif

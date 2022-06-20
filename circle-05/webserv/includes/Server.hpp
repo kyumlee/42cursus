@@ -10,6 +10,7 @@
 class	Server {
 
 	private:
+		std::string					_block;
 		std::string					_host;		// host to listen to
 		std::string					_port;		// port to open
 		std::string					_name;		// name of server
@@ -25,11 +26,13 @@ class	Server {
 	public:
 		// constructor, destructor, assignment operator overload
 		Server ();
+		Server (std::string block);
 		Server (const Server &srv);
 		~Server ();
 		Server						&operator= (const Server &srv);
 
 		// getters
+		std::string					getBlock ();
 		std::string					getHost ();
 		std::string					getPort ();
 		std::string					getName ();
@@ -43,6 +46,7 @@ class	Server {
 		std::string					getDefault ();
 		
 		// setters
+		void						setBlock (std::string block);
 		void						setHost (std::string host);
 		void						setPort (std::string port);
 		void						setName (std::string name);
@@ -54,8 +58,6 @@ class	Server {
 		void						setRedirect (int redirection);
 		void						setDListing (bool dirListing);
 		void						setDefault (std::string file);
-
-		void						parseServer (std::string block);
 
 		Location					selectLocation ();
 

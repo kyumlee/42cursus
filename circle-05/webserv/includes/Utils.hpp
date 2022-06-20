@@ -12,5 +12,6 @@
 
 void						printErr (std::string errMsg);
 std::vector<std::string>	split (std::string str, char delimiter = '\n');
+std::vector<std::string>	splitBlocks (std::string str);
 
 #endif
