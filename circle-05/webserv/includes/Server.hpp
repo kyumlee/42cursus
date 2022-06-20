@@ -55,6 +55,8 @@ class	Server {
 		void						setDListing (bool dirListing);
 		void						setDefault (std::string file);
 
+		void						parseServer (std::string block);
+
 		Location					selectLocation ();
 
 };

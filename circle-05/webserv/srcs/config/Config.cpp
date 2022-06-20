@@ -10,19 +10,7 @@ Config	&Config::operator= (Config &conf) { _server = conf._server; return (*this
 
 void	Config::addServer (Server serv) { _server.push_back(serv); }
 
-// TODO
 Server	Config::selectServer () { return (_server[0]); }
-
-void	Config::parseServerBlock (std::string buf) {
-	std::vector<std::string>	lines = split(buf);
-
-	for (size_t i = 0; i < lines.size(); i++) {
-		size_t	pos = lines[i].find("server", 0, 6);
-		if (pos != std::string::npos && lines[i][pos + 6] == '{') {
-			Server	serv;
-		}
-	}
-}
 
 void	Config::parse (std::string file) {
 	std::string	buf;
@@ -36,11 +24,10 @@ void	Config::parse (std::string file) {
 	std::ostringstream	ss;
 	ss << f.rdbuf();
 	buf = ss.str();
+
+	// TODO: count how many server blocks there are.
+	// while loop, pass the server block (content inside the brackets) to Server::parseServer() function. Do the parsing there.
 	
-	std::cout << buf << std::endl << std::endl;
-
-	parseServerBlock (buf);
-
 	// TODO: parse
 
 	// TODO: select an appropriate server

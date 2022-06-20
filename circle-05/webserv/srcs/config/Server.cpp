@@ -93,5 +93,8 @@ void						Server::setDListing (bool dListing) { _dListing = dListing; }
 
 void						Server::setDefault (std::string file) { _default = file; }
 
+// block should be the server block (all in between the brackets)
+void						Server::parseServer (std::string block);
+
 // TODO
 Location					Server::selectLocation () { return (_locations[0]); }
