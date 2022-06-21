@@ -25,11 +25,11 @@ void						Config::parse (std::string file) {
 
 	std::vector<std::string>	blocks = splitBlocks(buf);
 
-	for (size_t i = 0; i < blocks.size(); i++)
+	for (size_t i = 0; i < blocks.size(); i++) {
 		addServer(Server(blocks[i]));
+		_server[i].parse();
+	}
 
-	std::cout << _server[0].getBlock() << std::endl;
-	std::cout << _server[1].getBlock() << std::endl;
 	// TODO: parse
 
 	// TODO: select an appropriate server

@@ -13,8 +13,9 @@ std::vector<std::string>	split (std::string str, char delimiter) {
 		token = str.substr(pos_start, pos_end - pos_start);
 		pos_start = pos_end + 1;
 		ret.push_back(token);
+
 	}
-//	ret.push_back(str.substr(pos_start));
+	ret.push_back(str.substr(pos_start));
 	return (ret);
 }
 

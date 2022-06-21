@@ -92,7 +92,45 @@ void						Server::setRedirect (int redirect) { _redirect = redirect; }
 void						Server::setDListing (bool dListing) { _dListing = dListing; }
 void						Server::setDefault (std::string file) { _default = file; }
 
-// block should be the server block (all in between the brackets)
+void						Server::parse () {
+	size_t		pos = 0, nlPos = 0, scPos = 0;
+	std::string	address;
+
+	if ((pos = _block.find("listen", 0)) != std::string::npos) {
+		pos += 6;
+		while (std::isspace(_block[pos]))
+			pos++;
+		scPos = _block.find(";", pos);
+		nlPos = _block.find("\n", pos);
+		if (scPos == std::string::npos || nlPos == std::string::npos || scPos > nlPos) {
+			printErr("invalid server block");
+			return ;
+		}
+		address = _block.substr(pos, scPos - pos);
+
+		std::vector<std::string>	addr = split(address, ':');
+
+/*		std::cout << "after split: " << std::endl;
+		for (size_t i = 0; i < addr.size(); i++) {
+			std::cout << " addr[" << i << "]: " << addr[i] << std::endl;
+		}*/
+
+		if (addr.size() == 1) {
+			if (address.find(".", 0) == std::string::npos) {
+				setHost("0.0.0.0");
+				setPort(address);
+			}
+			else {
+				setHost(address);
+				setPort("80");
+			}
+		}
+		else {
+			setHost(addr[0]);
+			setPort(addr[1]);
+		}
+	}
+}
 
 // TODO
 Location					Server::selectLocation () { return (_locations[0]); }
