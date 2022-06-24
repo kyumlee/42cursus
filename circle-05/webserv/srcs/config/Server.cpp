@@ -92,44 +92,109 @@ void						Server::setRedirect (int redirect) { _redirect = redirect; }
 void						Server::setDListing (bool dListing) { _dListing = dListing; }
 void						Server::setDefault (std::string file) { _default = file; }
 
-void						Server::parse () {
-	size_t		pos = 0, nlPos = 0, scPos = 0;
+size_t						searchAndSkipWord (std::string line, std::string str) {
+	size_t	pos = line.find(str, 0);
+	size_t	scPos = line.find(";", pos);
+	size_t	nlPos = line.find("\n", pos);
+
+	if (pos == std::string::npos)
+		return (1);
+	if (scPos == std::string::npos || nlPos == std::string::npos || scPos > nlPos) {
+		printErr("invalid server block");
+		return (0);
+	}
+
+	pos += str.length();
+	while (std::isspace(line[pos]))
+		pos++;
+	return (pos);
+}
+
+int							Server::setAddress () {
+	size_t		pos = 0, scPos = 0;
 	std::string	address;
 
-	if ((pos = _block.find("listen", 0)) != std::string::npos) {
-		pos += 6;
-		while (std::isspace(_block[pos]))
-			pos++;
-		scPos = _block.find(";", pos);
-		nlPos = _block.find("\n", pos);
-		if (scPos == std::string::npos || nlPos == std::string::npos || scPos > nlPos) {
-			printErr("invalid server block");
-			return ;
-		}
-		address = _block.substr(pos, scPos - pos);
+	pos = searchAndSkipWord(_block, "listen");
+	if (pos == 0 || pos == 1)
+		return (1);
+	scPos = _block.find(";", pos);
+	address = _block.substr(pos, scPos - pos);
 
-		std::vector<std::string>	addr = split(address, ':');
+	std::vector<std::string>	addr = split(address, ':');
 
-/*		std::cout << "after split: " << std::endl;
-		for (size_t i = 0; i < addr.size(); i++) {
-			std::cout << " addr[" << i << "]: " << addr[i] << std::endl;
-		}*/
-
-		if (addr.size() == 1) {
-			if (address.find(".", 0) == std::string::npos) {
-				setHost("0.0.0.0");
-				setPort(address);
-			}
-			else {
-				setHost(address);
-				setPort("80");
-			}
+	if (addr.size() == 1) {
+		if (address.find(".", 0) == std::string::npos) {
+			setHost("0.0.0.0");
+			setPort(address);
 		}
 		else {
-			setHost(addr[0]);
-			setPort(addr[1]);
+			setHost(address);
+			setPort("80");
 		}
 	}
+	else {
+		setHost(addr[0]);
+		setPort(addr[1]);
+	}
+
+	return (0);
+}
+
+bool						isNumber (std::string str) {
+	for (size_t i = 0; i < str.size(); i++) {
+		if (!std::isdigit(str[i]))
+			return (0);
+	}
+	return (1);
+}
+
+int							Server::setErrorPages () {
+	size_t		pos = 0, scPos = 0;
+	std::string	errPages;
+
+	pos = searchAndSkipWord(_block, "error_page");
+	if (pos == 0 || pos == 1)
+		return (1);
+	scPos = _block.find(";", pos);
+	errPages = _block.substr(pos, scPos - pos);
+
+	std::vector<std::string>	errPagesVec = split(errPages, ' ');
+	for (size_t i = 0; i < errPagesVec.size(); i += 2) {
+		if (!isNumber(errPagesVec[i])) {
+			printErr("error code must be a number");
+			return (0);
+		}
+		std::stringstream	ssInt(errPagesVec[i]);
+		int	errNo;
+		ssInt >> errNo;
+		_errPages.insert(std::make_pair(errNo, errPagesVec[i + 1]));
+	}
+	return (0);
+}
+
+int							Server::setClntSize () {
+	return (1);
+}
+
+int							Server::setMethods () {
+	return (1);
+}
+
+int							Server::setDListing () {
+	return (1);
+}
+
+int							Server::setDefault () {
+	return (1);
+}
+
+int							Server::parse () {
+	if (setAddress())
+		return (1);
+	if (setErrorPages())
+		return (1);
+
+	return (0);
 }
 
 // TODO

@@ -59,7 +59,13 @@ class	Server {
 		void						setDListing (bool dirListing);
 		void						setDefault (std::string file);
 
-		void						parse ();
+		int							setAddress ();
+		int							setErrorPages ();
+		int							setClntSize ();
+		int							setMethods ();
+		int							setDListing ();
+		int							setDefault ();
+		int							parse ();
 
 		Location					selectLocation ();
 
