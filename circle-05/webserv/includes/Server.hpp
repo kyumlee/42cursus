@@ -50,22 +50,24 @@ class	Server {
 		void						setHost (std::string host);
 		void						setPort (std::string port);
 		void						setName (std::string name);
-		void						addErrPage (int errNo, std::string page);
-		void						setClntSize (int size);
+		int							setErrPages (std::vector<std::string> pages);
+		int							setClntSize (int size);
 		void						setRoot (std::string root);
 		void						addLocation (Location lc);
-		void						addMethod (std::string method);
+		int							setMethods (std::vector<std::string> methods);
 		void						setRedirect (int redirection);
-		void						setDListing (bool dirListing);
+		int							setDListing (bool dirListing);
 		void						setDefault (std::string file);
 
-		int							setAddress ();
-		int							setErrorPages ();
-		int							setClntSize ();
-		int							setMethods ();
-		int							setDListing ();
-		int							setDefault ();
-		int							parse ();
+		int							parseAddress ();
+		int							parseName ();
+		int							parseRoot ();
+		int							parseErrPages ();
+		int							parseClntSize ();
+		int							parseMethods ();
+		int							parseDListing ();
+		int							parseDefault ();
+		void						parse ();
 
 		Location					selectLocation ();
 

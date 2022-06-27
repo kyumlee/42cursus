@@ -5,7 +5,7 @@ Server::Server ()
 	: _block(),
 	_host("0.0.0.0"),
 	_port("80"),
-	_name("default_server"),
+	_name(""),
 	_clntSize(1024),
 	_root("./../../tmp/www"),
 	_locations(),
@@ -13,7 +13,9 @@ Server::Server ()
 	_redirect(1),
 	_dListing(true),
 	_default("./../../tmp/www/default")
-{}
+{
+	_errPages.insert(std::make_pair(404, "./tmp/www/error.html"));
+}
 
 Server::Server (std::string block)
 	: _block(block),
@@ -27,7 +29,9 @@ Server::Server (std::string block)
 	_redirect(1),
 	_dListing(true),
 	_default("./../../tmp/www/default")
-{}
+{
+	_errPages.insert(std::make_pair(404, "./tmp/www/error.html"));
+}
 
 Server::Server (const Server &srv)
 	: _block(srv._block),
@@ -82,47 +86,68 @@ void						Server::setBlock(std::string block) { _block = block; }
 void						Server::setHost (std::string host) { _host = host; }
 void						Server::setPort (std::string port) { _port = port; }
 void						Server::setName (std::string name) { _name = name; }
-void						Server::addErrPage (int errNo, std::string page) { _errPages[errNo] = page; }
-void						Server::setClntSize (int size) { _clntSize = size; }
-void						Server::setRoot (std::string root) { _root = root; }
-void						Server::addLocation (Location lc) { _locations.push_back(lc); }
-// TODO: if [method] is not GET, POST, nor DELETE, to something else
-void						Server::addMethod (std::string method) { _methods.push_back(method); }
-void						Server::setRedirect (int redirect) { _redirect = redirect; }
-void						Server::setDListing (bool dListing) { _dListing = dListing; }
-void						Server::setDefault (std::string file) { _default = file; }
-
-size_t						searchAndSkipWord (std::string line, std::string str) {
-	size_t	pos = line.find(str, 0);
-	size_t	scPos = line.find(";", pos);
-	size_t	nlPos = line.find("\n", pos);
-
-	if (pos == std::string::npos)
+int							Server::setErrPages (std::vector<std::string> pages) {
+	if (pages.size() % 2) {
+		printErr("error must be a pair of err_code and err_page");
 		return (1);
-	if (scPos == std::string::npos || nlPos == std::string::npos || scPos > nlPos) {
-		printErr("invalid server block");
-		return (0);
 	}
 
-	pos += str.length();
-	while (std::isspace(line[pos]))
-		pos++;
-	return (pos);
+	for (size_t i = 0; i < pages.size(); i += 2) {
+		if (!isNumber(pages[i])) {
+			printErr("error code must be a number");
+			return (1);
+		}
+		std::stringstream	ssInt(pages[i]);
+		int	errNo;
+		ssInt >> errNo;
+		_errPages.insert(std::make_pair(errNo, pages[i + 1]));
+	}
+
+	return (0);
 }
-
-int							Server::setAddress () {
-	size_t		pos = 0, scPos = 0;
-	std::string	address;
-
-	pos = searchAndSkipWord(_block, "listen");
-	if (pos == 0 || pos == 1)
+int							Server::setClntSize (int size) {
+	if (size < 1) {
+		printErr("size should be greater than 0");
 		return (1);
-	scPos = _block.find(";", pos);
-	address = _block.substr(pos, scPos - pos);
+	}
 
-	std::vector<std::string>	addr = split(address, ':');
+	_clntSize = size;
+	return (0);
+}
+void						Server::setRoot (std::string root) { _root = root; }
+void						Server::addLocation (Location lc) { _locations.push_back(lc); }
+int							Server::setMethods (std::vector<std::string> methods) {
+	if (methods.empty()) {
+		printErr("there are no methods");
+		return (1);
+	}
 
-	if (addr.size() == 1) {
+	for (size_t i = 0; i < methods.size(); i++) {
+		if (methods[i] != "GET" && methods[i] != "POST" && methods[i] != "DELETE")
+			return (1);
+		_methods.push_back(methods[i]);
+	}
+	return (0);
+}
+void						Server::setRedirect (int redirect) { _redirect = redirect; }
+int							Server::setDListing (bool dListing) {
+	_dListing = dListing;
+	return (0);
+}
+void						Server::setDefault (std::string file) { _default = file; }
+
+int							Server::parseAddress () {
+	std::string					address;
+	std::vector<std::string>	addressVec;
+	std::pair<bool, size_t>		res = skipKey(_block, "listen");
+
+	if (res.first == false)
+		return (1);
+
+	address = parseValue(_block, res.second);
+	addressVec = split(address, ':');
+
+	if (addressVec.size() == 1) {
 		if (address.find(".", 0) == std::string::npos) {
 			setHost("0.0.0.0");
 			setPort(address);
@@ -132,69 +157,115 @@ int							Server::setAddress () {
 			setPort("80");
 		}
 	}
-	else {
-		setHost(addr[0]);
-		setPort(addr[1]);
+	else if (addressVec.size() == 2) {
+		setHost(addressVec[0]);
+		setPort(addressVec[1]);
 	}
+	else
+		return (1);
+
+	return (0);
+}
+
+int							Server::parseName () {
+	std::string				name;
+	std::pair<bool, size_t>	res = skipKey(_block, "server_name");
+
+	if (res.first == false)
+		return (1);
+
+	name = parseValue(_block, res.second);
+	setName(name);
 
 	return (0);
 }
 
-bool						isNumber (std::string str) {
-	for (size_t i = 0; i < str.size(); i++) {
-		if (!std::isdigit(str[i]))
-			return (0);
-	}
-	return (1);
-}
+int							Server::parseRoot () {
+	std::string				root;
+	std::pair<bool, size_t>	res = skipKey(_block, "root");
 
-int							Server::setErrorPages () {
-	size_t		pos = 0, scPos = 0;
-	std::string	errPages;
-
-	pos = searchAndSkipWord(_block, "error_page");
-	if (pos == 0 || pos == 1)
+	if (res.first == false)
 		return (1);
-	scPos = _block.find(";", pos);
-	errPages = _block.substr(pos, scPos - pos);
+	root = parseValue(_block, res.second);
+	setRoot(root);
 
-	std::vector<std::string>	errPagesVec = split(errPages, ' ');
-	for (size_t i = 0; i < errPagesVec.size(); i += 2) {
-		if (!isNumber(errPagesVec[i])) {
-			printErr("error code must be a number");
-			return (0);
-		}
-		std::stringstream	ssInt(errPagesVec[i]);
-		int	errNo;
-		ssInt >> errNo;
-		_errPages.insert(std::make_pair(errNo, errPagesVec[i + 1]));
-	}
 	return (0);
 }
 
-int							Server::setClntSize () {
-	return (1);
-}
+int							Server::parseErrPages () {
+	std::string					errPages;
+	std::vector<std::string>	errPagesVec;
+	std::pair<bool, size_t>		res = skipKey(_block, "error_page");
 
-int							Server::setMethods () {
-	return (1);
-}
-
-int							Server::setDListing () {
-	return (1);
-}
-
-int							Server::setDefault () {
-	return (1);
-}
-
-int							Server::parse () {
-	if (setAddress())
+	if (res.first == false)
 		return (1);
-	if (setErrorPages())
+
+	errPages = parseValue(_block, res.second);
+	errPagesVec = split(errPages, ' ');
+
+	return (setErrPages(errPagesVec));
+}
+
+int							Server::parseClntSize () {
+	int						clntBodySize;
+	std::pair<bool, size_t>	res = skipKey(_block, "client_body_size");
+
+	if (res.first == false)
 		return (1);
+
+	std::stringstream		ssClntBodySize(parseValue(_block, res.second));
+	ssClntBodySize >> clntBodySize;
+
+	return (setClntSize(clntBodySize));
+}
+
+int							Server::parseMethods () {
+	std::string					methods;
+	std::vector<std::string>	methodsVec;
+	std::pair<bool, size_t>		res = skipKey(_block, "accepted_methods");
+
+	if (res.first == false)
+		return (1);
+
+	methods = parseValue(_block, res.second);
+	methodsVec = split(methods, ' ');
+
+	return (setMethods(methodsVec));
+}
+
+int							Server::parseDListing () {
+	std::string				is;
+	std::pair<bool, size_t>	res = skipKey(_block, "directory_listing");
+
+	if (res.first == false)
+		return (1);
+
+	is = parseValue(_block, res.second);
+	if (is == "on")
+		return (setDListing(true));
+	else if (is == "off")
+		return (setDListing(false));
+
+	return (1);
+}
+
+int							Server::parseDefault () {
+	std::string				file;
+	std::pair<bool, size_t>	res = skipKey(_block, "default_file");
+
+	if (res.first == false)
+		return (1);
+
+	file = parseValue(_block, res.second);
+	setDefault(file);
 
 	return (0);
+}
+
+void						Server::parse () {
+	if (parseAddress() || parseName() || parseErrPages() || parseRoot()
+		|| parseClntSize() || parseMethods() || parseDListing() || parseDefault())
+		return ;
 }
 
 // TODO

@@ -11,4 +11,8 @@ int	main(int argc, char **argv) {
 	Config	conf;
 
 	conf.parse(confFile);
+
+	Server srv = conf.selectServer("test.com");
+
+	std::cout << "server name: " << srv.getName() << std::endl;
 }
