@@ -69,6 +69,7 @@ class	Server {
 		int							parseDefault ();
 		void						parse ();
 
+		std::vector<Location>		findMatchingLocations (std::string route);
 		Location					selectLocation ();
 
 };

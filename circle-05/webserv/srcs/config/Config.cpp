@@ -28,23 +28,6 @@ void						Config::parse (std::string file) {
 	for (size_t i = 0; i < blocks.size(); i++) {
 		addServer(Server(blocks[i]));
 		_server[i].parse();
-
-/*		std::cout << "address: " << _server[i].getHost() << ":" << _server[i].getPort() << std::endl;
-		std::cout << "server name: " << _server[i].getName() << std::endl;
-		std::cout << "error pages: " << std::endl;
-		std::map<int,std::string>	map = _server[i].getErrPages();
-		for (std::map<int,std::string>::iterator it = map.begin(); it != map.end(); it++)
-			std::cout << " code: " << it->first << ", page: " << it->second << std::endl;
-		std::cout << "client's body size: " << _server[i].getClntSize() << std::endl;
-		std::cout << "root: " << _server[i].getRoot() << std::endl;
-		std::cout << "accepted methods: ";
-		for (size_t i = 0; i < _server[i].getMethods().size(); i++)
-			std::cout << "[" << _server[i].getMethods()[i] << "] ";
-		std::cout << std::endl;
-		std::cout << "directory listing: " << _server[i].getDListing() << std::endl;
-		std::cout << "default file: " << _server[i].getDefault() << std::endl;
-		std::cout << std::endl;*/
-
 	}
 }
 

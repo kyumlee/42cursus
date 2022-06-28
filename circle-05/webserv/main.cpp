@@ -12,7 +12,8 @@ int	main(int argc, char **argv) {
 
 	conf.parse(confFile);
 
-	Server srv = conf.selectServer("test.com");
+	Server		srv = conf.selectServer("test.com");
+	Location	loc = srv.selectLocation();
 
 	std::cout << "server name: " << srv.getName() << std::endl;
 }
