@@ -17,7 +17,7 @@ class	Config {
 		Server						getServerByName (std::string name);
 
 		void						addServer (Server serv);
-		void						parse (std::string file);
+		int							parse (std::string file);
 
 		std::vector<Server>			findMatchingServers (std::string request, std::string *host, std::string *port);
 		Server						selectServer (std::string request);

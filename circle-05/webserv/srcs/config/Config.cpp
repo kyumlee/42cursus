@@ -10,44 +10,28 @@ Config						&Config::operator= (Config &conf) { _server = conf._server; return (
 
 void						Config::addServer (Server serv) { _server.push_back(serv); }
 
-void						Config::parse (std::string file) {
-	std::string	buf;
-	std::cout << "configuration file: " << file << std::endl;
+/* function that parses the configuration file */
+int							Config::parse (std::string file) {
+	std::string					buf;
+	std::ifstream				f(file);
+	std::ostringstream			ss;
+	std::vector<std::string>	blocks;
 
-	std::ifstream	f(file);
-	if (!f) {
-		printErr("wrong configuration file");
-		return ;
-	}
-	std::ostringstream	ss;
+	if (!f)
+		return (1);
+
 	ss << f.rdbuf();
 	buf = ss.str();
 
-	std::vector<std::string>	blocks = splitBlocks(buf);
-
+	blocks = splitServerBlocks(buf);
 	for (size_t i = 0; i < blocks.size(); i++) {
 		addServer(Server(blocks[i]));
 		_server[i].parse();
-
-/*		std::cout << "address: " << _server[i].getHost() << ":" << _server[i].getPort() << std::endl;
-		std::cout << "server name: " << _server[i].getName() << std::endl;
-		std::cout << "error pages: " << std::endl;
-		std::map<int,std::string>	map = _server[i].getErrPages();
-		for (std::map<int,std::string>::iterator it = map.begin(); it != map.end(); it++)
-			std::cout << " code: " << it->first << ", page: " << it->second << std::endl;
-		std::cout << "client's body size: " << _server[i].getClntSize() << std::endl;
-		std::cout << "root: " << _server[i].getRoot() << std::endl;
-		std::cout << "accepted methods: ";
-		for (size_t i = 0; i < _server[i].getMethods().size(); i++)
-			std::cout << "[" << _server[i].getMethods()[i] << "] ";
-		std::cout << std::endl;
-		std::cout << "directory listing: " << _server[i].getDListing() << std::endl;
-		std::cout << "default file: " << _server[i].getDefault() << std::endl;
-		std::cout << std::endl;*/
-
 	}
+	return (0);
 }
 
+/* functions that finds the servers whose address/name match the request (TODO: CHECK) */ 
 std::vector<Server>			Config::findMatchingServers (std::string request, std::string *host, std::string *port) {
 	std::vector<Server>			ret;
 	std::vector<std::string>	addr = split(request, ':');
@@ -65,6 +49,7 @@ std::vector<Server>			Config::findMatchingServers (std::string request, std::str
 	return (ret);
 }
 
+/* function that selects the appropriate server for the request (TODO: CHECK) */
 Server						Config::selectServer (std::string request) {
 	std::string					host, port;
 	std::vector<Server>			ret = findMatchingServers(request, &host, &port);

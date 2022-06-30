@@ -1,9 +1,12 @@
 #include "./../includes/Utils.hpp"
 
-void						printErr (std::string errMsg) {
+/* function that prints an error message and returns 1. */
+int							printErr (std::string errMsg) {
 	std::cerr << "Error: " << errMsg << std::endl;
+	return (1);
 }
 
+/* function that splits a string by a delimiter. */
 std::vector<std::string>	split (std::string str, char delimiter) {
 	size_t						pos_start = 0, pos_end;
 	std::vector<std::string>	ret;
@@ -24,50 +27,86 @@ std::vector<std::string>	split (std::string str, char delimiter) {
 	return (ret);
 }
 
-std::vector<std::string>	splitBlocks (std::string str) {
+/* function that splits a config file into server blocks. */
+std::vector<std::string>	splitServerBlocks (std::string block) {
 	std::vector<std::string>	ret;
+	int							locBlockCount = 0;					// counts location blocks
+	size_t						pos = 0, blockPos = 0, locPos = 0;	// blockPos = position of "server", locPos = position of "location"
+	size_t						nextBlockPos = 0;					// position of next "server"
 
-	size_t	openBracketPos = 0, closeBracketPos = 0;
 	while (1) {
-		openBracketPos = str.find("{", openBracketPos);
-		closeBracketPos = str.find("}", openBracketPos);
+		blockPos = block.find("server ", pos) + 6;
+		pos = blockPos;
+		nextBlockPos = block.find("server ", pos);
+		while (std::isspace(block[pos]))
+			pos++;
+		if (block[pos] != '{')
+			return (ret);
 
-		if (openBracketPos == std::string::npos)
-			break ;
-		if (openBracketPos > closeBracketPos)
-			break ;
-
-		if (str.substr(openBracketPos, closeBracketPos - openBracketPos).find("location") != std::string::npos)
-			closeBracketPos = str.find("}", closeBracketPos + 1);
-
-		ret.push_back(str.substr(openBracketPos + 1, closeBracketPos - openBracketPos - 1));
-
-		openBracketPos = closeBracketPos + 1;
+		locPos = block.find("location", pos);
+		while (locPos != std::string::npos && locPos < nextBlockPos) {
+			locPos = block.find("location", locPos + 1);
+			locBlockCount++;
+		}
+		// skips the counted location blocks
+		while (locBlockCount) {
+			pos = block.find("}", pos) + 1;
+			locBlockCount--;
+		}
+		pos += 2;
+		ret.push_back(block.substr(blockPos, pos - blockPos));
 	}
+	return (ret);
+}
 
-	for (size_t i = 0; i < ret.size(); i++)
-		ret[i].erase(std::remove(ret[i].begin(), ret[i].end(), '\t'), ret[i].end());
+/* function that splits server block into location blocks. */
+std::vector<std::string>	splitLocationBlocks (std::string block) {
+	std::vector<std::string>	ret;
+	size_t						blockPos = 0, pos = 0;
+	size_t						nextLocPos = 0, closeBracketPos = 0;
+
+	while (1) {
+		blockPos = block.find("location", pos) + 8;
+		pos = blockPos;
+		nextLocPos = block.find("location", pos);
+
+		closeBracketPos = block.find("}", pos);
+
+		pos = closeBracketPos;
+		if (nextLocPos < closeBracketPos)
+			pos += 3;
+		pos++;
+
+		ret.push_back(block.substr(blockPos, pos - blockPos));
+
+		if (block[pos + 1] == '}')
+			break ;
+	}
 
 	return (ret);
 }
 
-std::pair<bool, size_t>		skipKey (std::string line, std::string str) {
-	size_t	pos = line.find(str, 0);
+/* function that returns the position after skipping [key]. (if [key] is not found, bool = false.) */
+std::pair<bool, size_t>		skipKey (std::string line, std::string key) {
+	size_t	pos = line.find(key, 0);
 	size_t	scPos = line.find(";", pos);
 	size_t	nlPos = line.find("\n", pos);
 
 	if (pos == std::string::npos)
 		return (std::make_pair(false, pos));
+
 	if (scPos == std::string::npos || nlPos == std::string::npos || scPos > nlPos) {
 		printErr("invalid server block");
 		return (std::make_pair(false, pos));
 	}
 
-	pos += str.length();
+	pos += key.length();
 	while (std::isspace(line[pos]))
 		pos++;
 	return (std::make_pair(true, pos));
 }
+
+/* function that checks if [str] is a number. */
 bool						isNumber (std::string str) {
 	for (size_t i = 0; i < str.size(); i++) {
 		if (!std::isdigit(str[i]))
@@ -76,7 +115,18 @@ bool						isNumber (std::string str) {
 	return (1);
 }
 
+/* function that parses the value. ([pos] = position returned in the above ::skipKey()) */
 std::string					parseValue (std::string line, size_t pos) {
 	size_t	scPos = line.find(";", pos);
 	return (line.substr(pos, scPos - pos));
+}
+
+/* function that converts a string into an int. */
+int							strToInt (std::string str) {
+	int					ret;
+	std::stringstream	ssInt(str);
+
+	ssInt >> ret;
+
+	return (ret);
 }
