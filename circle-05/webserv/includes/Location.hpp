@@ -4,18 +4,19 @@
 # include "./Utils.hpp"
 
 /*
- * location optional_modifier location_match {
+ * location optional_modifier location_route {
  * ...
  * }
  *
  * optional_modifier: (none), =, ~, ~*, ^~.
- * location_match: what Nginx should check the request URI against.
+ * location_route: what Nginx should check the request URI against.
  */
 
 class	Location {
 
 	private:
 		std::string					_block;
+<<<<<<< HEAD
 		int							_mod;	// optional modifier
 		std::string					_match;	// location match
 		int							_clntSize;
@@ -25,17 +26,29 @@ class	Location {
 		bool						_autoindex;
 		std::vector<std::string>	_index;
 		std::vector<Location>		_locations;
+=======
+		std::string					_mod;		// optional modifier
+		std::string					_route;		// location match
+		std::vector<std::string>	_methods;	// GET, POST, DELETE
+		int							_redirect;	// if a response code is 302, inform to re-request to another [Location]
+		bool						_dListing;	// autoindex on/off
+		std::string					_default;	// if a request is a directory, return this file
+>>>>>>> ffde9148b2142388403fd100328b992929e0602e
 
 	public:
 		// constructor, destructor, assignment operator overload
 		Location ();
+<<<<<<< HEAD
 		Location (std::string block);
+=======
+>>>>>>> ffde9148b2142388403fd100328b992929e0602e
 		Location (const Location &lb);
 		~Location ();
 		Location	&operator= (const Location &lb);
 
 		// getter
 		std::string					getBlock ();
+<<<<<<< HEAD
 		int							getMod ();
 		std::string					getMatch ();
 		int							getClntSize ();
@@ -65,6 +78,28 @@ class	Location {
 		int							parseIndex ();
 
 		int							parse ();
+=======
+		std::string					getMod ();
+		std::string					getRoute ();
+		std::vector<std::string>	getMethods ();
+		int							getRedirect ();
+		bool						getDListing ();
+		std::string					getDefault ();
+
+		// setter
+		void						setBlock (std::string block);
+		void						setMod (std::string mod);
+		void						setRoute (std::string route);
+		void						setMethods (std::vector<std::string> methods);
+		void						setRedirect (int redirection);
+		void						setDListing (bool dListing);
+		void						setDefault (std::string file);
+
+		int							parseMethods ();
+		int							parseDListing ();
+		int							parseDefault ();
+		void						parse ();
+>>>>>>> ffde9148b2142388403fd100328b992929e0602e
 };
 
 #endif

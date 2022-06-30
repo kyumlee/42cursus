@@ -251,4 +251,10 @@ int							Server::parse () {
 }
 
 // TODO
-Location					Server::selectLocation () { return (_locations[0]); }
+std::vector<Location>		Server::findMatchingLocations(std::string route) {
+}
+
+// TODO
+Location					Server::selectLocation () {
+	return (_locations[0]);
+}
