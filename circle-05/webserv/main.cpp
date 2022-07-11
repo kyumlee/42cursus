@@ -10,9 +10,8 @@ int	main(int argc, char **argv) {
 
 	if (conf.parse(confFile))
 		return (printErr("invalid configuration file"));
-	conf.parse(confFile);
 
-	ServerBlock		srv = conf.selectServerBlock("youpi");
+	ServerBlock		srv = conf.selectServerBlock("0.0.0.0:8000");
 	std::cout << "SERVER: " << std::endl;
 	std::cout << "- server name: " << srv.getName() << std::endl;
 

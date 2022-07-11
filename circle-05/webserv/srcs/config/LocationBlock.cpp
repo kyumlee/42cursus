@@ -74,19 +74,22 @@ void						LocationBlock::setIndex (std::vector<std::string> index) { _index = in
 void						LocationBlock::addLocationBlock (LocationBlock lc) { _locations.push_back(lc); }
 
 int							LocationBlock::parseModMatch () {
-	size_t	pos = 0, bracketPos = _block.find("{", 0);;
+	size_t	pos = 0, bracketPos = _block.find("{", 0);
 	size_t	end = _block.find("\n", 0);
 
 	while (std::isspace(_block[pos]))
 		pos++;
 
+	if (_block[pos] != '/' && _block[pos] != '=' && _block[pos] != '^')
+		return (0);
+
 	if (_block[pos] == '/')
 		setMod(NONE);
-	if (_block[pos] == '=') {
+	else if (_block[pos] == '=') {
 		setMod(EXACT);
 		pos++;
 	}
-	if (_block[pos] == '^' && _block[pos] == '~') {
+	else if (_block[pos] == '^' && _block[pos] == '~') {
 		setMod(PREFERENTIAL);
 		pos += 2;
 	}
@@ -102,30 +105,38 @@ int							LocationBlock::parseModMatch () {
 }
 
 int							LocationBlock::parseClntSize () {
-	std::pair<bool, size_t>	res = skipKey(_block, "client_body_size");
+	std::pair<bool, size_t>	res = skipKey(_block, "client_max_body_size", ";");
 	int						clntSize;
 
 	if (res.first == false)
 		return (0);
 
-	clntSize = strToInt(parseValue(_block, res.second));;
+	clntSize = MiBToBits(parseValue(_block, res.second, ";"));
+
+	if (clntSize < 0)
+		return (printErr("wrong client max body size (should be positive)"));
+
+	setClntSize(clntSize);
+
+	return (0);
+/*	clntSize = strToInt(parseValue(_block, res.second, ";"));
 
 	if (clntSize < 0)
 		return (printErr("size should be positive"));
 
-	setClntSize(clntSize);
+	setClntSize(clntSize);*/
 
 	return (0);
 }
 
 int							LocationBlock::parseMethods () {
 	std::string				methods;
-	std::pair<bool, size_t>	res = skipKey(_block, "allow_methods");
+	std::pair<bool, size_t>	res = skipKey(_block, "limit_except", "{");
 
 	if (res.first == false)
 		return (0);
 
-	methods = parseValue(_block, res.second);
+	methods = parseValue(_block, res.second, "{");
 	setMethods(split(methods, ' '));
 
 	if (_methods.empty())
@@ -140,24 +151,24 @@ int							LocationBlock::parseMethods () {
 }
 
 int							LocationBlock::parseRoot () {
-	std::pair<bool, size_t>	res = skipKey(_block, "root");
+	std::pair<bool, size_t>	res = skipKey(_block, "root", ";");
 
 	if (res.first == false)
 		return (0);
 
-	setRoot(parseValue(_block, res.second));
+	setRoot(parseValue(_block, res.second, ";"));
 
 	return (0);
 }
 
 int							LocationBlock::parseAutoindex () {
 	std::string				is;
-	std::pair<bool, size_t>	res = skipKey(_block, "autoindex");
+	std::pair<bool, size_t>	res = skipKey(_block, "autoindex", ";");
 
 	if (res.first == false)
 		return (0);
 
-	is = parseValue(_block, res.second);
+	is = parseValue(_block, res.second, ";");
 
 	if (is == "on") setAutoindex(ON);
 	else if (is == "off") setAutoindex(OFF);
@@ -167,12 +178,12 @@ int							LocationBlock::parseAutoindex () {
 
 int							LocationBlock::parseIndex () {
 	std::string				index;
-	std::pair<bool, size_t>	res = skipKey(_block, "index");
+	std::pair<bool, size_t>	res = skipKey(_block, "index", ";");
 
 	if (res.first == false)
 		return (0);
 
-	index = parseValue(_block, res.second);
+	index = parseValue(_block, res.second, ";");
 	setIndex(split(index, ' '));
 
 	return (0);

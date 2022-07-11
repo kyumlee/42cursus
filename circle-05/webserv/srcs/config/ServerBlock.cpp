@@ -99,20 +99,22 @@ void						ServerBlock::setIndex (std::vector<std::string> index) { _index = inde
 int							ServerBlock::parseAddress () {
 	std::string					address;
 	std::vector<std::string>	addressVec;
-	std::pair<bool, size_t>		res = skipKey(_block, "listen");
+	std::pair<bool, size_t>		res = skipKey(_block, "listen", ";");
 
 	if (res.first == false)
 		return (0);
 
-	address = parseValue(_block, res.second);
+	address = parseValue(_block, res.second, ";");
 	if (address.find(" ", 0) != std::string::npos) {
 		addressVec = split(address, ' ');
 		if (addressVec.size() > 2)
-			return (printErr("wrong address field"));
+			return (printErr("wrong syntax in listen directive"));
 		if (addressVec[1] == "default_server")
 			_default = true;
+		addressVec = split(addressVec[0], ':');
 	}
-	addressVec = split(addressVec[0], ':');
+	else
+		addressVec = split(address, ':');
 
 	if (addressVec.size() == 1) {
 		if (addressVec[0].find(".", 0) == std::string::npos)
@@ -125,19 +127,19 @@ int							ServerBlock::parseAddress () {
 		setPort(addressVec[1]);
 	}
 	else
-		return (printErr("in ServerBlock::parseAddress()"));
+		return (printErr("wrong syntax in listen directive"));
 
 	return (0);
 }
 
 int							ServerBlock::parseName () {
 	std::string				names;
-	std::pair<bool, size_t>	res = skipKey(_block, "server_name");
+	std::pair<bool, size_t>	res = skipKey(_block, "server_name", ";");
 
 	if (res.first == false)
 		return (0);
 
-	names = parseValue(_block, res.second);
+	names = parseValue(_block, res.second, ";");
 
 	setName(split(names, ' ')[0]);
 
@@ -146,28 +148,28 @@ int							ServerBlock::parseName () {
 
 int							ServerBlock::parseErrPages () {
 	std::string				errPages;
-	std::pair<bool, size_t>	res = skipKey(_block, "error_page");
+	std::pair<bool, size_t>	res = skipKey(_block, "error_page", ";");
 
 	if (res.first == false)
 		return (0);
 
-	errPages = parseValue(_block, res.second);
+	errPages = parseValue(_block, res.second, ";");
 	setErrPages(split(errPages, ' '));
 
 	return (0);
 }
 
 int							ServerBlock::parseClntSize () {
-	std::pair<bool, size_t>	res = skipKey(_block, "client_max_body_size");
+	std::pair<bool, size_t>	res = skipKey(_block, "client_max_body_size", ";");
 	int						clntSize;
 
 	if (res.first == false)
 		return (0);
 
-	clntSize = MiBToBits(parseValue(_block, res.second));
+	clntSize = MiBToBits(parseValue(_block, res.second, ";"));
 
 	if (clntSize < 0)
-		return (printErr("size should be positive"));
+		return (printErr("wrong client max body size (should be positive)"));
 
 	setClntSize(clntSize);
 
@@ -175,24 +177,24 @@ int							ServerBlock::parseClntSize () {
 }
 
 int							ServerBlock::parseRoot () {
-	std::pair<bool, size_t>	res = skipKey(_block, "root");
+	std::pair<bool, size_t>	res = skipKey(_block, "root", ";");
 
 	if (res.first == false)
 		return (0);
 
-	setRoot(parseValue(_block, res.second));
+	setRoot(parseValue(_block, res.second, ";"));
 
 	return (0);
 }
 
 int							ServerBlock::parseMethods () {
 	std::string				methods;
-	std::pair<bool, size_t>	res = skipKey(_block, "limit_except");
+	std::pair<bool, size_t>	res = skipKey(_block, "limit_except", "{");
 
 	if (res.first == false)
 		return (0);
 
-	methods = parseValue(_block, res.second);
+	methods = parseValue(_block, res.second, "{");
 	setMethods(split(methods, ' '));
 
 	if (_methods.empty())
@@ -200,7 +202,7 @@ int							ServerBlock::parseMethods () {
 
 	for (size_t i = 0; i < _methods.size(); i++) {
 		if (_methods[i] != "GET" && _methods[i] != "POST" && _methods[i] != "DELETE")
-			return (printErr("invalid method"));
+			return (printErr("wrong method (GET, POST, DELETE)"));
 	}
 
 	return (0);
@@ -208,12 +210,12 @@ int							ServerBlock::parseMethods () {
 
 int							ServerBlock::parseAutoindex () {
 	std::string				is;
-	std::pair<bool, size_t>	res = skipKey(_block, "autoindex");
+	std::pair<bool, size_t>	res = skipKey(_block, "autoindex", ";");
 
 	if (res.first == false)
 		return (0);
 
-	is = parseValue(_block, res.second);
+	is = parseValue(_block, res.second, ";");
 
 	if (is == "on")
 		setAutoindex(ON);
@@ -225,7 +227,7 @@ int							ServerBlock::parseAutoindex () {
 
 int							ServerBlock::parseIndex () {
 	std::string				index;
-	std::pair<bool, size_t>	res = skipKey(_block, "index");
+	std::pair<bool, size_t>	res = skipKey(_block, "index", ";");
 
 	if (res.first == false) {
 		std::vector<std::string>	idx;
@@ -234,21 +236,19 @@ int							ServerBlock::parseIndex () {
 		return (0);
 	}
 
-	index = parseValue(_block, res.second);
+	index = parseValue(_block, res.second, ";");
 	setIndex(split(index, ' '));
 
 	return (0);
 }
 
 int							ServerBlock::parse () {
-/*	std::vector<std::string>	locBlocks = splitBlocks(_block, "location ");
-//	std::vector<std::string>	locBlocks = splitLocationBlocks(_block);
+	std::vector<std::string>	locBlocks = splitBlocks(_block, "location ");
 
 	for (size_t i = 0; i < locBlocks.size(); i++) {
-		std::cout << "location block: " << locBlocks[i] << std::endl;
 		addLocationBlock(LocationBlock(locBlocks[i]));
 		_locations[i].parse();
-	}*/
+	}
 
 	parseAddress();
 	parseName();

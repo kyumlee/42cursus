@@ -28,7 +28,6 @@ int							Config::parse (std::string file) {
 	buf = ss.str();
 
 	blocks = splitBlocks(buf, "server ");
-//	blocks = splitServerBlocks(buf);
 
 	for (size_t i = 0; i < blocks.size(); i++) {
 		addServerBlock(ServerBlock(blocks[i]));
