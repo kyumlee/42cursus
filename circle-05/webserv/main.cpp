@@ -11,11 +11,11 @@ int	main(int argc, char **argv) {
 	if (conf.parse(confFile))
 		return (printErr("invalid configuration file"));
 
-	ServerBlock		srv = conf.selectServerBlock("0.0.0.0:8000");
-	std::cout << "SERVER: " << std::endl;
-	std::cout << "- server name: " << srv.getName() << std::endl;
+	std::cout << "parse done" << std::endl;
 
-	LocationBlock	loc = srv.selectLocationBlock("/bye");
+	std::vector<ServerBlock>	srvs = conf.getServerBlocks();
+
+	LocationBlock	loc = srvs[0].selectLocationBlock("/directory/blah.blah");
 
 	std::cout << "LOCATION: " << std::endl;
 	std::cout << "- location uri: " << loc.getURI() << std::endl;

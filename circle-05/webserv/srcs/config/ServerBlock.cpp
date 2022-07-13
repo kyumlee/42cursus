@@ -258,6 +258,7 @@ int							ServerBlock::parse () {
 	parseMethods();
 	parseAutoindex();
 	parseIndex();
+
 /*	std::cout << "host: " << getHost() << ", port: " << getPort() << std::endl;
 	std::cout << "server name: " << getName() << std::endl;
 	std::cout << "error pages: " << std::endl;
@@ -279,8 +280,33 @@ int							ServerBlock::parse () {
 
 LocationBlock				ServerBlock::selectLocationBlock (std::string requestURI) const {
 	std::vector<LocationBlock>	locationBlocks;
+	std::vector<std::string>	requestURIvec;
 	size_t						max = 0;
 	size_t						ret = 0;
+
+	if (requestURI[0] == '/')
+		requestURIvec = split(&requestURI[1], '/');
+	else
+		requestURIvec = split(requestURI, '/');
+
+	for (size_t i = 0; i < requestURIvec.size(); i++) {
+		requestURIvec[i] = "/" + requestURIvec[i];
+	}
+
+	size_t	size = requestURIvec.size();
+	if (size > 1) {
+		for (size_t i = 0; i < _locations.size(); i++) {
+			if (requestURIvec[0] == _locations[i].getURI())
+				locationBlocks.push_back(_locations[i]);
+		}
+
+		std::cout << "LOCATION BLOCK: " << std::endl;
+		std::cout << "-      URI: " << locationBlocks[0].getURI() << std::endl;
+		std::cout << "-      MOD: " << locationBlocks[0].getMod() << std::endl;
+		std::cout << "-     root: " << locationBlocks[0].getRoot() << std::endl;
+		std::cout << "-    index: " << locationBlocks[0].getIndex()[0] << std::endl;
+		std::cout << "- location: " << locationBlocks[0].getLocationBlocks()[0].getBlock() << std::endl;
+	}
 
 	for (size_t i = 0; i < _locations.size(); i++) {
 		if (_locations[i].getMod() == EXACT) {
@@ -291,7 +317,7 @@ LocationBlock				ServerBlock::selectLocationBlock (std::string requestURI) const
 
 	for (size_t i = 0; i < _locations.size(); i++) {
 		if (_locations[i].getMod() == NONE || _locations[i].getMod() == PREFERENTIAL) {
-			if (requestURI.find(_locations[i].getURI(), 0) != std::string::npos)
+			if (_locations[i].getURI().find(requestURI, 0) != std::string::npos)
 				locationBlocks.push_back(_locations[i]);
 		}
 	}
