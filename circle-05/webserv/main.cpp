@@ -1,4 +1,5 @@
 #include "./includes/Config.hpp"
+#include "includes/Utils.hpp"
 
 int	main(int argc, char **argv) {
 	if (argc > 2)
@@ -15,7 +16,7 @@ int	main(int argc, char **argv) {
 
 	std::vector<ServerBlock>	srvs = conf.getServerBlocks();
 
-	LocationBlock	loc = srvs[0].selectLocationBlock("/directory/blah.blah");
+	LocationBlock	loc = srvs[0].selectLocationBlock("/hello/goodbye");
 
 	std::cout << "LOCATION: " << std::endl;
 	std::cout << "- location uri: " << loc.getURI() << std::endl;

@@ -281,51 +281,69 @@ int							ServerBlock::parse () {
 LocationBlock				ServerBlock::selectLocationBlock (std::string requestURI) const {
 	std::vector<LocationBlock>	locationBlocks;
 	std::vector<std::string>	requestURIvec;
-	size_t						max = 0;
-	size_t						ret = 0;
+	size_t						max = 0,ret = 0, level;
 
 	if (requestURI[0] == '/')
 		requestURIvec = split(&requestURI[1], '/');
 	else
 		requestURIvec = split(requestURI, '/');
 
-	for (size_t i = 0; i < requestURIvec.size(); i++) {
+	level = requestURIvec.size();
+	if (level > 2) {
+		printErr("only one nested location block is available (at the moment)");
+		return (LocationBlock());
+	}
+
+	for (size_t i = 0; i < level; i++) {
 		requestURIvec[i] = "/" + requestURIvec[i];
 	}
 
-	size_t	size = requestURIvec.size();
-	if (size > 1) {
-		for (size_t i = 0; i < _locations.size(); i++) {
-			if (requestURIvec[0] == _locations[i].getURI())
-				locationBlocks.push_back(_locations[i]);
-		}
-
-		std::cout << "LOCATION BLOCK: " << std::endl;
-		std::cout << "-      URI: " << locationBlocks[0].getURI() << std::endl;
-		std::cout << "-      MOD: " << locationBlocks[0].getMod() << std::endl;
-		std::cout << "-     root: " << locationBlocks[0].getRoot() << std::endl;
-		std::cout << "-    index: " << locationBlocks[0].getIndex()[0] << std::endl;
-		std::cout << "- location: " << locationBlocks[0].getLocationBlocks()[0].getBlock() << std::endl;
+	for (size_t i = 0; i < _locations.size(); i++) {
+		std::vector<LocationBlock>	nested = _locations[i].getLocationBlocks();
+		for (size_t j = 0; j < nested.size(); j++)
+			if (nested[j].getBlock() != "") {
+				if (nested[j].getURI().find(_locations[i].getURI(), 0) == std::string::npos) {
+					printErr("wrong URI in location block");
+					return (LocationBlock());
+				}
+			}
 	}
 
 	for (size_t i = 0; i < _locations.size(); i++) {
 		if (_locations[i].getMod() == EXACT) {
-			if (_locations[i].getURI() == requestURI)
-				return (_locations[i]);
+			if (_locations[i].getURI() == requestURIvec[0]) {
+				if (level == 1)
+					return (_locations[i]);
+
+				std::vector<LocationBlock>	nested = _locations[i].getLocationBlocks();
+				for (size_t j = 0; j < nested.size(); j++) {
+					if (!compareURIsWithWildcard(nested[j].getURI(), requestURIvec[1], nested[j].getMod()))
+						return (nested[j]);
+				}
+			}
 		}
 	}
 
 	for (size_t i = 0; i < _locations.size(); i++) {
 		if (_locations[i].getMod() == NONE || _locations[i].getMod() == PREFERENTIAL) {
-			if (_locations[i].getURI().find(requestURI, 0) != std::string::npos)
-				locationBlocks.push_back(_locations[i]);
+			if (_locations[i].getURI().find(requestURIvec[0], 0) != std::string::npos) {
+				if (level == 1)
+					locationBlocks.push_back(_locations[i]);
+				else {
+					std::vector<LocationBlock>	nested = _locations[i].getLocationBlocks();
+					for (size_t j = 0; j < nested.size(); j++) {
+						if (!compareURIsWithWildcard(nested[j].getURI(), requestURIvec[1], nested[j].getMod()))
+							locationBlocks.push_back(nested[j]);
+					}
+				}
+			}
 		}
 	}
 
 	if (locationBlocks.empty())
 		return (LocationBlock());
 
-	max = locationBlocks[ret].getURI().size();
+	max = locationBlocks[ret].getURI().length();
 	for (size_t i = 1; i < locationBlocks.size(); i++) {
 		if (locationBlocks[i].getURI().size() > max) {
 			max = locationBlocks[i].getURI().size();
