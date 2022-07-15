@@ -16,7 +16,7 @@ int	main(int argc, char **argv) {
 
 	std::vector<ServerBlock>	srvs = conf.getServerBlocks();
 
-	LocationBlock	loc = srvs[0].selectLocationBlock("/hello/goodbye");
+	LocationBlock	loc = srvs[0].selectLocationBlock("/helloa");
 
 	std::cout << "LOCATION: " << std::endl;
 	std::cout << "- location uri: " << loc.getURI() << std::endl;

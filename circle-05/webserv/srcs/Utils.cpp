@@ -184,8 +184,6 @@ int				compareURIsWithWildcard(std::string URI, std::string request, int mod) {
 
 	temp = &URI[pos];
 	if (URI[pos] != '*') {
-		std::cout << "temp: [" << temp << "]" << std::endl;
-		std::cout << "requ: [" << &request[1] << "]" << std::endl;
 		if (mod == EXACT) {
 			if (temp == &request[1])
 				return (0);
