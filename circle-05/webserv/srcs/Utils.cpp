@@ -176,6 +176,44 @@ int			MiBToBits (std::string size) {
 	return (strToInt(size.substr(0, size.size() - 1)) * 8388608);
 }
 
+int				compareURIsWithWildcard(std::string URI, std::string request, int mod) {
+	size_t		pos = URI.find('/', URI.find('/', 0) + 1) + 1;
+	char		start;
+	std::string	temp;
+	std::string	temp2;
+
+	temp = &URI[pos];
+	if (URI[pos] != '*') {
+		if (mod == EXACT) {
+			if (temp == &request[1])
+				return (0);
+		}
+
+		if (mod == NONE || mod == PREFERENTIAL) {
+			if (temp.find(&request[1], 0) != std::string::npos)
+				return (0);
+		}
+
+		return (1);
+	}
+
+	start = URI[pos + 1];
+	temp = &URI[pos + 1];
+	temp2 = request.substr(request.find(start, 0), request.length() - request.find(start, 0));
+
+	if (mod == EXACT) {
+		if (temp == temp2)
+			return (0);
+	}
+
+	if (mod == NONE || mod == PREFERENTIAL) {
+		if (temp.find(temp2, 0) != std::string::npos)
+			return (0);
+	}
+
+	return (1);
+}
+
 unsigned int	host_to_int(std::string host)
 {
 	size_t	sep = 0;

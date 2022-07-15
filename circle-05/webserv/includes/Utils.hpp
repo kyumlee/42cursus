@@ -26,6 +26,7 @@ bool						isNumber (std::string str);
 std::string					parseValue (std::string line, size_t pos, std::string delimiter);
 int							strToInt (std::string str);
 int							MiBToBits (std::string size);
+int							compareURIsWithWildcard (std::string URI, std::string request, int mod);
 
 
 #include <sys/types.h> //st_mtime

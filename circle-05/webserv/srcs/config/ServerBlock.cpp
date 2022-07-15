@@ -258,6 +258,7 @@ int							ServerBlock::parse () {
 	parseMethods();
 	parseAutoindex();
 	parseIndex();
+
 /*	std::cout << "host: " << getHost() << ", port: " << getPort() << std::endl;
 	std::cout << "server name: " << getName() << std::endl;
 	std::cout << "error pages: " << std::endl;
@@ -277,32 +278,85 @@ int							ServerBlock::parse () {
 	return (0);
 }
 
+// selecting which location will respond to the request
 LocationBlock				ServerBlock::selectLocationBlock (std::string requestURI) const {
 	std::vector<LocationBlock>	locationBlocks;
-	size_t						max = 0;
-	size_t						ret = 0;
+	std::vector<std::string>	requestURIvec;
+	size_t						max = 0,ret = 0, level;
 
+	// first, split the request URI by '/'
+	if (requestURI[0] == '/')
+		requestURIvec = split(&requestURI[1], '/');
+	else
+		requestURIvec = split(requestURI, '/');
+
+	// size of the splitted vector
+	level = requestURIvec.size();
+
+	// only one nested location is available for now
+	if (level > 2) {
+		printErr("only one nested location block is available (at the moment)");
+		return (LocationBlock());
+	}
+
+	// add '/' to each of the string in the vector
+	for (size_t i = 0; i < level; i++)
+		requestURIvec[i] = "/" + requestURIvec[i];
+
+	// if nested location's URI doesn't contain its parent location's URI, it is an error
+	for (size_t i = 0; i < _locations.size(); i++) {
+		std::vector<LocationBlock>	nested = _locations[i].getLocationBlocks();
+		for (size_t j = 0; j < nested.size(); j++) {
+			if (nested[j].getBlock() != "") {
+				if (nested[j].getURI().find(_locations[i].getURI(), 0) == std::string::npos) {
+					printErr("wrong URI in location block");
+					return (LocationBlock());
+				}
+			}
+		}
+	}
+
+	// look for locations whose modifier is '='; the request URI must match the location's URI
 	for (size_t i = 0; i < _locations.size(); i++) {
 		if (_locations[i].getMod() == EXACT) {
 			if (_locations[i].getURI() == requestURI)
 				return (_locations[i]);
+			else
+				break ;
 		}
 	}
 
+	// look for locations who don't have modifiers or '~'; the location's URI must contain the request URI
 	for (size_t i = 0; i < _locations.size(); i++) {
 		if (_locations[i].getMod() == NONE || _locations[i].getMod() == PREFERENTIAL) {
-			if (requestURI.find(_locations[i].getURI(), 0) != std::string::npos)
-				locationBlocks.push_back(_locations[i]);
+			if (_locations[i].getURI().find(requestURIvec[0], 0) != std::string::npos) {
+				// first, check if the two URIs match
+				if (_locations[i].getURI() == requestURI)
+					locationBlocks.push_back(_locations[i]);
+				// then, check for the level of the request URI
+				else if (level == 1)
+					locationBlocks.push_back(_locations[i]);
+				else {
+					// if the request URI has more than one slashes (nested), get the nested locations and compare their URIs
+					std::vector<LocationBlock>	nested = _locations[i].getLocationBlocks();
+					for (size_t j = 0; j < nested.size(); j++) {
+						if (!compareURIsWithWildcard(nested[j].getURI(), requestURIvec[1], nested[j].getMod()))
+							locationBlocks.push_back(nested[j]);
+					}
+				}
+			}
 		}
 	}
 
+	// if no location was found, return empty location
 	if (locationBlocks.empty())
 		return (LocationBlock());
 
-	max = locationBlocks[ret].getURI().size();
+	// if there are more than one locations selected, return the location with longest URI
+	max = locationBlocks[ret].getURI().length();
 	for (size_t i = 1; i < locationBlocks.size(); i++) {
 		if (locationBlocks[i].getURI().size() > max) {
-			max = locationBlocks[i].getURI().size();
+			max = locationBlocks[i].getURI().length();
 			ret = i;
 		}
 	}
