@@ -29,7 +29,7 @@ int		ft_error(int no) {
 
 int		free_rect(char **rect, int i) {
 	for (int a = 0; a < i; a++)
-		free(rect[i]);
+		free(rect[a]);
 	free(rect);
 	return (1);
 }
@@ -44,7 +44,7 @@ int		init_info(FILE *fp, t_info *info) {
 
 	if (info->w > 300 || info->w < 1)
 		return (1);
-	if (info->h > 300 || info->w < 1)
+	if (info->h > 300 || info->h < 1)
 		return (1);
 
 	info->rect = malloc(sizeof(char **) * (info->h + 1));
@@ -70,9 +70,9 @@ int		init_info(FILE *fp, t_info *info) {
 int		fill_circles(FILE *fp, t_info *info) {
 	while (fscanf(fp, "%c %f %f %f %c\n", &info->type, &info->x, &info->y, &info->r, &info->c_ch) == 5) {
 		if (info->type != 'c' && info->type != 'C')
-			return (free_rect(info->rect, info->w));
+			return (free_rect(info->rect, info->h));
 		if (info->r <= 0.0)
-			return (free_rect(info->rect, info->w));
+			return (free_rect(info->rect, info->h));
 
 		for (int i = 0; i < info->h; i++) {
 			for (int j = 0; j < info->w; j++) {
@@ -112,15 +112,9 @@ int		main (int argc, char **argv) {
 		return (ft_error(FILE_ERR));
 
 	if (fill_circles(fp, &info))
-	{
-		// fix memory leak
-		system("leaks a.out");
 		return (ft_error(FILE_ERR));
-	}
 
 	draw(info.rect);
-
-	system("leaks a.out");
 
 	return (0);
 }
