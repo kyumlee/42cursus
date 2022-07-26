@@ -10,11 +10,6 @@
 # define ARG_ERR	1
 # define FILE_ERR	2
 
-// fopen fread fscanf fclose write
-// malloc calloc realloc free
-// memset
-// powf sqrt
-
 typedef struct	s_bg {
 	int		w;
 	int		h;
