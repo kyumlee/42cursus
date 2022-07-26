@@ -1,5 +1,5 @@
-#ifndef __MICRO_PAINT_H__
-# define __MICRO_PAINT_H__
+#ifndef __MINI_PAINT_H__
+# define __MINI_PAINT_H__
 
 # include <stdio.h>
 # include <unistd.h>
@@ -15,25 +15,30 @@
 // memset
 // powf sqrt
 
-typedef struct	s_all {
-	int		z_w;
-	int		z_h;
-	char	z_bg;
-	char	r;
-	float	r_x;
-	float	r_y;
-	float	r_w;
-	float	r_h;
-	char	r_bg;
-	char	**img;
-}			t_all;
+typedef struct	s_info {
+	int			w;
+	int			h;
+	char		ch;
 
-int			ft_strlen(char *s);
-int			ft_putstr_fd(int fd, char *s);
-int			ft_putendl_fd(int fd, char *s);
-int			ft_error(int no);
+	char		type;
+	float		x;
+	float		y;
+	float		r;
+	char		c_ch;
 
-int			init_all(char *filename, FILE *fp, t_all *all);
-void		fill(t_all *all);
+	char		**rect;
+}				t_info;
+
+int				ft_strlen(char *s);
+int				ft_putstr_fd(int fd, char *s);
+int				ft_putendl_fd(int fd, char *s);
+int				ft_error(int no);
+
+float			distance(float Xa, float Ya, float Xb, float Yb);
+
+int				init_info(FILE *fp, t_info *info);
+int				fill_circles(FILE *fp, t_info *info);
+
+int				draw(char **rect);
 
 #endif
