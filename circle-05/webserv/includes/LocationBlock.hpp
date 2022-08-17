@@ -3,8 +3,8 @@
 
 # include "./Utils.hpp"
 
-class	LocationBlock {
-
+class	LocationBlock
+{
 	private:
 		std::string					_block;
 		int							_mod;
@@ -13,54 +13,60 @@ class	LocationBlock {
 		std::vector<std::string>	_methods;
 		int							_redirect;
 		std::string					_root;
-		bool						_autoindex;
+		int							_autoindex;
 		std::vector<std::string>	_index;
 		std::string					_cgi;
 		std::vector<LocationBlock>	_locations;
 
+		bool						_empty;
+		std::string					_path;
+
 	public:
-		// constructor, destructor, assignment operator overload
-		LocationBlock ();
-		LocationBlock (std::string block);
-		LocationBlock (const LocationBlock &lb);
-		~LocationBlock ();
-		LocationBlock	&operator= (const LocationBlock &lb);
+		LocationBlock();
+		LocationBlock(std::string block);
+		LocationBlock(const LocationBlock &lb);
+		~LocationBlock();
+		LocationBlock	&operator=(const LocationBlock &lb);
 
-		// getter
-		std::string					getBlock () const;
-		int							getMod () const;
-		std::string					getURI () const;
-		int							getClntSize () const;
-		std::vector<std::string>	getMethods () const;
-		int							getRedirect () const;
-		std::string					getRoot () const;
-		bool						getAutoindex () const;
-		std::vector<std::string>	getIndex () const;
-		std::string					getCGI () const;
-		std::vector<LocationBlock>	getLocationBlocks () const;
+		std::string					getBlock() const;
+		int							getMod() const;
+		std::string					getURI() const;
+		int							getClntSize() const;
+		std::vector<std::string>	getMethods() const;
+		int							getRedirect() const;
+		std::string					getRoot() const;
+		int							getAutoindex() const;
+		std::vector<std::string>	getIndex() const;
+		std::string					getCGI() const;
+		std::vector<LocationBlock>	getLocationBlocks() const;
+		std::string					getPath() const;
 
-		// setter
-		void						setMod (int mod);
-		void						setURI (std::string uri);
-		void						setClntSize (int clntSize);
-		void						setMethods (std::vector<std::string> methods);
-		void						setRedirect (int redirection);
-		void						setRoot (std::string root);
-		void						setAutoindex (bool autoindex);
-		void						setIndex (std::vector<std::string> index);
-		void						setCGI (std::string cgi);
-		void						addLocationBlock (LocationBlock lc);
+		bool						empty() const;
 
-		// parse
-		int							parseModMatch ();
-		int							parseClntSize ();
-		int							parseMethods ();
-		int							parseRoot ();
-		int							parseAutoindex ();
-		int							parseIndex ();
-		int							parseCGI ();
+		void						setMod(int mod);
+		void						setURI(std::string uri);
+		void						setClntSize(int clntSize);
+		void						setMethods(std::vector<std::string> methods);
+		void						setRedirect(int redirection);
+		void						setRoot(std::string root);
+		void						setAutoindex(int autoindex);
+		void						setIndex(std::vector<std::string> index);
+		void						setCGI(std::string cgi);
+		void						addLocationBlock(LocationBlock lc);
+		void						setEmpty(bool empty);
+		void						setPath(const std::string& path);
 
-		int							parse ();
+		int							parseModMatch();
+		int							parseClntSize();
+		int							parseMethods();
+		int							parseRoot();
+		int							parseAutoindex();
+		int							parseIndex();
+		int							parseCGI();
+
+		int							parse();
+
+		void						printLocationBlock();
 };
 
 #endif
