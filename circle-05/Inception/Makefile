@@ -1,7 +1,7 @@
 all:
-	docker build ./srcs/requirements/nginx/ -t test
-	docker run -p 443:443 --name abc test
+	docker-compose -f ./srcs/docker-compose.yml up --build
 
 clean:
-	docker rm abc
-	docker rmi test
+	docker-compose -f ./srcs/docker-compose.yml down
+
+re: clean all
