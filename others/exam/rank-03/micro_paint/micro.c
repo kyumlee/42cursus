@@ -74,7 +74,6 @@ int init_bg(FILE *fp, bg *bg) {
 		if (!temp[i])
 			return (free_till(temp, i));
 	}
-	ft_putendl_fd(1, "MALLOC DONE!!!");
 	bg->zone = temp;
 
 	for (int i = 0; i < bg->h; i++) {
@@ -124,10 +123,7 @@ int draw(FILE *fp, bg *bg, rect *rect) {
 			ft_putendl_fd(1, bg->zone[i]);
 		return (0);
 	}
-//	ft_putendl_fd(1, "trying free..");
-//	free_till(bg->zone, bg->h);
-//	free(bg->zone);
-//	ft_putendl_fd(1, "free done!");
+	free_till(bg->zone, bg->h);
 	return (1);
 }
 
@@ -150,6 +146,8 @@ int	main(int argc, char **argv) {
 
 	if (draw(fp, &bg, &rect))
 		return (return_error(FILE_ERROR));
+
+	free_till(bg.zone, bg.h);
 
 	return (0);
 }
