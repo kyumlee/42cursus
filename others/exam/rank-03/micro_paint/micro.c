@@ -7,8 +7,6 @@
 #define ARG_ERROR 1
 #define FILE_ERROR 2
 
-// TODO: MEMORY LEAK
-
 typedef struct {
 	int w, h;
 	char c;
@@ -55,14 +53,11 @@ int	free_till(char **rect, int j) {
 	return (1);
 }
 
-	// if error, return 1
 int init_bg(FILE *fp, bg *bg) {
 	int size = fscanf(fp, "%d %d %c\n", &bg->w, &bg->h, &bg->c);
 
-	// check first line
 	if (size != 3)
 		return (1);
-	// check width and height
 	if (bg->w	< 1 || bg->w > 300 || bg->h < 1 || bg->h > 300)
 		return (1);
 
@@ -86,13 +81,9 @@ int init_bg(FILE *fp, bg *bg) {
 }
 
 int is_in_rect(rect *rect, int x, int y) {
-	// outside of rectangle
-	if ((x < rect->x || rect->x + rect->w < x) ||
-		(y < rect->y || rect->y + rect->h < y))
+	if (x < rect->x || rect->x + rect->w < x || y < rect->y || rect->y + rect->h < y)
 		return (0);
-	// border of rectangle
-	if ((x - rect->x < 1 || rect->x + rect->w - x < 1) ||
-		(y - rect->y < 1 || rect->y + rect->h - y < 1))
+	if (x - rect->x < 1 || rect->x + rect->w - x < 1 || y - rect->y < 1 || rect->y + rect->h - y < 1)
 		return (1);
 	return (2);
 }
@@ -110,10 +101,7 @@ void draw_rect(bg *bg, rect *rect) {
 int draw(FILE *fp, bg *bg, rect *rect) {
 	int size = fscanf(fp, "%c %f %f %f %f %c\n", &rect->r, &rect->x, &rect->y, &rect->w, &rect->h, &rect->c);
 	while (size == 6) {
-		// if character is not r nor R,
-		// if width or height is <= 0
-		if ((rect->r != 'r' && rect->r != 'R') ||
-					rect->w <= 0 || rect->h <= 0)
+		if ((rect->r != 'r' && rect->r != 'R') || rect->w <= 0 || rect->h <= 0)
 			return (1);
 		draw_rect(bg, rect);
 		size = fscanf(fp, "%c %f %f %f %f %c\n", &rect->r, &rect->x, &rect->y, &rect->w, &rect->h, &rect->c);

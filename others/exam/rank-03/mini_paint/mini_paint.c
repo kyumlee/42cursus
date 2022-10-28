@@ -59,12 +59,11 @@ int	init_bg(FILE *fp, t_bg *bg) {
 }
 
 int		is_in_circle(float dist) {
-	if (dist <= 0.0000000) {
-		if (dist <= -1.00000000)
-			return (1);
-		return (2);
-	}
-	return (0);
+	if (dist > 0)
+		return (0);
+	if (dist <= -1)
+		return (1);
+	return (2);
 }
 
 float	distance(float Xa, float Ya, float Xb, float Yb) {
