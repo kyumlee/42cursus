@@ -7,10 +7,10 @@
 # include <signal.h>
 # include <string.h>
 
-# define TYPE_DEFAULT	0
-# define TYPE_EOL		1
-# define TYPE_BREAK		2
-# define TYPE_PIPE		3
+# define DEFAULT	0
+# define EOL		1
+# define BREAK		2
+# define PIPE		3
 
 typedef struct	s_list {
 	char			**argv;
@@ -26,8 +26,7 @@ int		ft_strlen(char *s);
 char	*ft_strdup(char *s);
 
 // write functions
-void	ft_putstr_fd(int fd, char *s);
-void	ft_putendl_fd(int fd, char *s);
+void	ft_putstr_fd(int fd, char *s, int nl);
 
 // error functions
 int		cd_bad_args(void);
@@ -39,8 +38,7 @@ void	execve_err(char *path);
 void	ft_lstadd_back(t_list **info, t_list *new_node);
 
 // t_list-related functions
-int		get_argv_len(char **argv);
-int		get_arg_type(char *arg);
+void	set_len_type(char **argv, int *len, int *type);
 int		parse_argv(t_list **info, char **argv);
 
 // execute functions
