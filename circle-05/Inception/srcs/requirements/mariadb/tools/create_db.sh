@@ -1,0 +1,20 @@
+#!/bin/sh
+
+service mysql start
+
+mysql_secure_installation << EOF
+
+Y
+Root!234
+Root!234
+Y
+n
+Y
+Y
+EOF
+
+mysql -u$MARIADB_ROOT -e "GRANT ALL ON *.* TO '$MARIADB_ROOT'@'%' IDENTIFIED BY '$MARIADB_ROOT_PASSWORD'; FLUSH PRIVILEGES; CREATE DATABASE IF NOT EXISTS $DB_NAME; GRANT ALL ON $DB_NAME.* TO '$MARIADB_USER'@'%' IDENTIFIED BY '$MARIADB_PASSWORD'; FLUSH PRIVILEGES;"
+
+service mysql stop
+
+exec "$@"
